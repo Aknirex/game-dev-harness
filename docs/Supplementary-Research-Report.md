@@ -1,4 +1,4 @@
-# Game Dev Harness —— 补充调研：竞品/生态/学术/安全/行业实践
+# aknirex's Game Dev Harness —— 补充调研：竞品/生态/学术/安全/行业实践
 
 > 调研日期：2026-07-11
 > 覆盖：竞品对标 · MCP 游戏生态 · 学术前沿 · Agent 评估 · 3D 资产标准 · 游戏专用 LLM · 安全前沿 · 行业实践 · 音频自动化 · 开发者态度
@@ -43,9 +43,9 @@
 | 项目 | 规模 |
 |------|------|
 | **Unity-MCP** (GameDev-MCP-Server) | 与 Unreal-MCP 共享后端 |
-| **GladeKit MCP for Unity** | 235+ 工具 |
+| **GladeKit MCP for Unity** | 260+ 工具，16+ 类别（⚠️ 原 URL 不可访问，待确认） |
 | **@akiojin/unity-editor-mcp** | 70+ 工具 |
-| **GladeKit MCP for Godot** | 33 工具 |
+| **GladeKit MCP for Godot** | 105 工具（⚠️ 原 URL 不可访问，待确认） |
 
 **关键发现**：MCP 已成为跨引擎的统一工具访问层标准。Epic 官方将其内置到 UE 5.8，Unity 官方在 2026 年 7 月讨论中已涉及 Unity AI MCP。
 
@@ -58,12 +58,12 @@ MCP 在游戏领域的三个层次：
 | 层级 | 实例 | 说明 |
 |------|------|------|
 | **引擎层** | Unreal MCP (官方) · Unity-MCP · Godot-MCP | 各自提供引擎内部操作 |
-| **中间件层** | Wwise-MCP | 通过 WAAPI 暴露 46 个验证工具 |
+| **中间件层** | Wwise-MCP | 通过 WAAPI 暴露 69 个验证工具（⚠️ 原 URL 不可访问，待确认） |
 | **通用层** | horizOn-MCP · GladeKit MCP | 跨引擎通用能力 |
 
 **对 Harness 的架构影响**：
 - Harness 目前设计"自建 Named Pipe IPC + 自定义协议"
-- 这意味着：**无法利用已有的 MCP 工具生态**（Unreal-MCP 62-133 工具、Unity-MCP 70+ 工具、Wwise-MCP 46 工具）
+- 这意味着：**无法利用已有的 MCP 工具生态**（Unreal-MCP 62-133 工具、Unity-MCP 70+ 工具、Wwise-MCP 69 工具）
 - **无法与 Claude Code / Cursor 等现有 Agent 兼容**——这些 Agent 已原生支持 MCP 协议
 - 架构选择：是自建 IPC 作为 MCP Client 连接已有 MCP Server，还是完全重建工具集？
 

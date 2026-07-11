@@ -1,10 +1,11 @@
-# Game Dev Harness —— 架构概要
+# aknirex's Game Dev Harness —— 架构概要
 
 > 核心理念：LLM + Harness = Agent
 > 技术选型状态：**已确定**（详见 `Tech-Selection-Report.md`）
 > 引擎接入策略：**MCP 生态优先**——Harness 是 MCP Client，连接已有的 Unreal/Unity/Godot MCP Server
 > Agent 架构：**多 Agent 协作**——Planner / Coder / Asset Agent / Reviewer 分工
 > 引擎优先级：Unreal Engine (UE 5.8 内置 MCP) → Unity → Godot
+> JSON 库：glaze (C++20 编译期反射), 代码示例中 `nlohmann::json` 代表 `glz::json_t`（动态 JSON 值类型）或 glaze 反射结构体
 
 ---
 
@@ -15,7 +16,7 @@
 │                     Presentation Layer                          │
 │  GUI: ChatView · PipelineView · SandboxReviewView ·            │
 │       PluginMarketView · DiffView · FileBrowser                │
-│  CLI: harness run "prompt" · harness serve                     │
+│  CLI: agdh run "prompt" · agdh serve                     │
 ├────────────────────────────────────────────────────────────────┤
 │                      Application Layer                          │
 │  SessionManager · ProjectManager · SettingsManager             │
@@ -42,40 +43,13 @@
 │  ┌──────┴───────┬──────────────┬──────────────┐               │
 │  │ Unreal MCP   │ Unity MCP    │ Godot MCP    │ Wwise MCP     │
 │  │ (Epic官方)   │ (GladeKit等) │ (GladeKit)   │               │
-│  │ 62-133工具   │ 70-235工具   │ 33工具       │ 46工具        │
+│  │ 62-133工具   │ 70-260+工具  │ 105工具      │ 69工具        │
 │  └──────────────┴──────────────┴──────────────┴───────────────┘
 │         │
 │  ┌──────┴──────────────────────────────────────────────────────┐
 │  │              AI Pipeline Host (Python)                       │
 │  │  TRELLIS · MoMask · RigNet · Blender (Python Process)      │
 │  └─────────────────────────────────────────────────────────────┘
-```
-┌────────────────────────────────────────────────────────────────┐
-│                     Presentation Layer                          │
-│  GUI 模式: ChatView · PipelineView · PluginMarketView ·        │
-│           DiffView · FileBrowser                                │
-│  CLI 模式: harness run "prompt" · harness serve                │
-│  两者共享同一套 Harness Core + Agent Layer                      │
-├────────────────────────────────────────────────────────────────┤
-│                      Application Layer                          │
-│  SessionManager · ProjectManager · SettingsManager             │
-│  PluginIndexManager · UpdateManager                             │
-├────────────────────────────────────────────────────────────────┤
-│                       Agent Layer                               │
-│  AgentLoop · LLMClient Interface · ContextBuilder ·            │
-│  PromptTemplates · MCP Bridge                                   │
-├────────────────────────────────────────────────────────────────┤
-│                      Harness Layer  ← 核心                      │
-│  ToolRegistry · ExecutionEngine · PermissionManager ·          │
-│  WorkflowEngine · PluginManager                                 │
-├────────────────────────────────────────────────────────────────┤
-│                    IPC / Bridge Layer                            │
-│  EngineAdapter(IPC) · AIPipelineBridge · SubprocessManager     │
-├──────────────┬──────────────┬──────────────┬───────────────────┤
-│ Unreal Adpt. │ Unity Adpt.  │ Godot Adpt.  │ AI Pipeline Host   │
-│ (C++ Plugin) │ (C# Plugin)  │ (GDExtension)│ (Python Process)   │
-│ ★源码读取    │              │              │                    │
-└──────────────┴──────────────┴──────────────┴───────────────────┘
 ```
 
 ---
@@ -517,7 +491,7 @@ Orchestrator → User: "已完成。骑士模型 (2342面, PBR贴图)，
 C++ ↔ Python 的桥接方案：
 
 ```
-C++ Harness ←→ gRPC ←→ Python Pipeline Host
+C++ Harness ←→ Shared Memory (data) + Named Pipe (control) ←→ Python Pipeline Host
                              ├─ TRELLIS Service (图/文→3D)
                              ├─ MoMask Service (文→动画)
                              ├─ RigNet Service (自动绑定)
@@ -559,7 +533,8 @@ public:
     GPUStatus CheckGPUStatus();
 
 private:
-    std::unique_ptr<grpc::Channel> channel_;
+    std::unique_ptr<ipc::SharedMemoryChannel> data_channel_;
+    std::unique_ptr<ipc::NamedPipeChannel> control_channel_;
     std::unordered_map<std::string, std::future<AIPipelineResult>> tasks_;
 };
 ```
@@ -576,7 +551,8 @@ private:
 - 最高性能和能力
 
 **B. 脚本插件**
-- 通过脚本语言绑定 Harness API（具体脚本语言待选型——候选：Lua/LuaJIT、JavaScript/QuickJS、Python/嵌入式等）
+- 通过脚本语言绑定 Harness API：**Lua 5.4 + sol2**（已选定）
+- 沙箱升级路径：Luau（Roblox 的 Lua 分支，提供渐进类型 + 细粒度沙箱）
 - 热加载、无编译、安全沙箱
 - 适合社区贡献简单工具
 
@@ -753,27 +729,32 @@ User Input: "生成一个 Low-Poly 骑士，带走路动画，导入 Unreal"
 
 ---
 
-## 4. 技术选型（待定，以下为候选方案示意）
+## 4. 技术选型（已确定，详见 `Tech-Selection-Report.md`）
 
-| 层级 | 候选方向 | 选型标准 |
-|------|----------|----------|
-| **GUI 框架** | 原生 GUI 框架 / Web 前端壳 / 混合方案 | 跨平台、富文本渲染（Markdown + 代码高亮 + 流式显示）、插件管理 UX、开发效率 |
-| **核心语言** | 系统级语言（C++ / Rust / Zig 等） | 性能、跨平台、游戏行业生态兼容性 |
-| **HTTP Client** | 待选型 | LLM API 调用（SSE 流式解析）、插件下载 |
-| **JSON** | 待选型 | C++ 生态的 JSON 库 |
-| **IPC 方案** | gRPC / Named Pipe / HTTP / 自定义协议 | 按场景选择：Core↔Python (大数据量)、Core↔Unreal (低延迟)、Core↔MCP Server (标准协议) |
-| **脚本语言** | Lua / JavaScript / Python 嵌入 | 热加载、安全沙箱、社区贡献门槛 |
-| **构建系统** | CMake / 其他 | 跨平台标准 |
-| **包管理** | vcpkg / Conan / 其他 | 依赖管理 |
-| **测试** | 待选型 | 单元测试 + 集成测试 |
-| **日志** | 待选型 | 高性能异步日志 |
+| 层级 | 选型 | 依据 |
+|------|------|------|
+| **GUI 框架** | Electron + React | Claude/Cursor/Windsurf 全部采用；Chat UI 组件在 Web 生态成熟 |
+| **核心语言** | C++20/23 | 性能 + UE 生态兼容 |
+| **MCP SDK** | cxxmcp (C++17, MIT) | 448/448 客户端测试通过, 零运行时依赖 |
+| **HTTP Client** | cpp-httplib | 内置 SSE Client, header-only |
+| **JSON** | glaze (C++20 reflection) | 比 nlohmann/json 快 10-15x, 编译期反射 |
+| **IPC 方案** | Shared Memory + Named Pipe | Core↔Python: Shared Memory (大数据) + Named Pipe (信令, ~27µs RTT) |
+| **脚本语言** | Lua 5.4 + sol2 | 专为 C/C++ 嵌入设计, 16µs VM 启动 (沙箱升级路径: Luau) |
+| **插件市场** | GitHub Release 托管 + 官方 JSON 索引 | 去中心化, 类 Homebrew 模式 |
+| **构建系统** | CMake 3.28+ + vcpkg (manifest) | C++ 事实标准 |
+| **测试** | doctest | 编译最快 (Catch2 的 10-20x) |
+| **日志** | spdlog | 异步, OBS Studio 同款 |
+| **异步 I/O** | ASIO + C++20 coroutines | 成熟异步框架 |
+| **CPU 并行** | Taskflow | DAG 任务调度, MIT 许可 |
+| **崩溃报告** | sentry-native + Crashpad (C++) / @sentry/electron (JS) | 独立进程崩溃隔离 |
+| **自动更新** | electron-updater + GitHub Releases | NSIS 差分更新 ~10-25MB/次 |
 
 ---
 
 ## 5. 目录结构建议
 
 ```
-game-dev-harness/
+aknirex-game-dev-harness/
 ├── CMakeLists.txt
 ├── src/
 │   ├── app/                    # 应用入口 + GUI

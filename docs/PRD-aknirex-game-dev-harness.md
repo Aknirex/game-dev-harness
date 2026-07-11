@@ -1,4 +1,4 @@
-# PRD: Game Dev Harness —— LLM 驱动的游戏开发 Agent 桌面软件
+# PRD: aknirex's Game Dev Harness —— LLM 驱动的游戏开发 Agent 桌面软件
 
 > 版本: v0.1 · 状态: 草案 · 日期: 2026-07-11
 
@@ -6,7 +6,7 @@
 
 ## 1. Summary
 
-Game Dev Harness 是一个桌面应用，核心理念是 **LLM + Harness = Agent**。Harness 采用 **MCP (Model Context Protocol) 生态优先**策略——不做重复造轮子的引擎 IPC，而是作为 MCP Client 连接已有的 Unreal/Unity/Godot MCP Server（已分别有 62-612 个现成工具）。Harness 的增量价值在于：**多 Agent 协作调度**（Planner → Coder → Asset → Reviewer）、**AI 3D 资产管线编排**、**Sandbox 隔离执行和可逆操作**、**插件市场生态**。
+aknirex's Game Dev Harness 是一个桌面应用，核心理念是 **LLM + Harness = Agent**。Harness 采用 **MCP (Model Context Protocol) 生态优先**策略——不做重复造轮子的引擎 IPC，而是作为 MCP Client 连接已有的 Unreal/Unity/Godot MCP Server（已分别有 62-612 个现成工具）。Harness 的增量价值在于：**多 Agent 协作调度**（Planner → Coder → Asset → Reviewer）、**AI 3D 资产管线编排**、**Sandbox 隔离执行和可逆操作**、**插件市场生态**。
 
 > 技术栈待选型确定，本文档中的具体技术名称（Qt、gRPC、sol3 等）均为候选方案，不代表最终决策。
 
@@ -49,7 +49,7 @@ Game Dev Harness 是一个桌面应用，核心理念是 **LLM + Harness = Agent
 | Unity Muse | Unity 内置 AI | 仅限 Unity，黑盒服务，不开放 |
 | Blender MCP | Blender 工具桥接 | 仅解决 Blender 环节，不是全流程 Agent |
 | Unreal Engine AI 工具 | 引擎内置/官方 | UE 5.8 内置 MCP，但无 Agent 级编排能力 |
-| **Game Dev Harness** | **MCP 生态 + 多 Agent 游戏全流程** | MCP Client 复用已有工具 + 多 Agent 调度 + AI 3D 管线 + Sandbox + 插件市场 |
+| **aknirex's Game Dev Harness** | **MCP 生态 + 多 Agent 游戏全流程** | MCP Client 复用已有工具 + 多 Agent 调度 + AI 3D 管线 + Sandbox + 插件市场 |
 
 ---
 
@@ -112,7 +112,7 @@ Game Dev Harness 是一个桌面应用，核心理念是 **LLM + Harness = Agent
 
 ### 6.2 核心差异化
 
-1. **MCP 生态优先**：不做重复的引擎 IPC——Harness 是 MCP Client，连接 Epic 官方 Unreal MCP (UE 5.8 内置)、Unity-MCP (235+ 工具)、Godot-MCP、Wwise-MCP 等已有 MCP Server。Harness 的增量价值不在底层通信，而在上层编排
+1. **MCP 生态优先**：不做重复的引擎 IPC——Harness 是 MCP Client，连接 Epic 官方 Unreal MCP (UE 5.8 内置)、Unity-MCP (260+ 工具)、Godot-MCP (105 工具)、Wwise-MCP (69 工具) 等已有 MCP Server。Harness 的增量价值不在底层通信，而在上层编排
 2. **多 Agent 协作**：Planner Agent 分解任务 → Coder Agent 生成/修改代码 → Asset Agent 管理 3D 资产管线 → Reviewer Agent 验证变更——分工协作而非单打独斗
 3. **AI 3D 管线内置**：把调研文档中的 TRELLIS + MoMask + Mixamo 流程产品化为一键调用
 4. **Sandbox 隔离执行**（P0）：所有 Agent 操作在隔离环境中执行，生成文件先写入临时目录，用户确认后合并。支持一键回滚
@@ -127,7 +127,7 @@ Game Dev Harness 是一个桌面应用，核心理念是 **LLM + Harness = Agent
 
 ```
 ┌──────────────────────────────────────────────────────────┐
-│  Game Dev Harness                        [Project: MyRPG] │
+│  aknirex's Game Dev Harness                        [Project: MyRPG] │
 ├─────────────────────┬────────────────────────────────────┤
 │  Chat / Agent View  │  Tool Execution Panel               │
 │                     │                                    │
@@ -175,9 +175,9 @@ Harness 是赋予 Agent 行动能力的核心，"LLM + Harness = Agent" 中的 H
 |------|--------|------|
 | **MCP Client Core** | P0 | 实现 MCP 协议客户端（stdio 和 SSE/HTTP 传输）。连接 MCP Server，自动发现 tools/resources/prompts，映射为 Harness Tool |
 | **Unreal MCP 集成** | P0 | 连接 Epic 官方 Unreal MCP（UE 5.8 内置，localhost:8000/mcp）或社区实现（IvanMurzak 62 工具 / ultimate 133 工具）。自动发现和管理 UE 工具 |
-| **Unity MCP 集成** | P1 | 连接 Unity-MCP / GladeKit MCP (235+ 工具) / akiojin (70+ 工具) |
-| **Godot MCP 集成** | P1 | 连接 GladeKit MCP for Godot (33 工具) |
-| **Wwise MCP 集成** | P2 | 连接 Wwise-MCP (46 工具)，覆盖游戏音频自动化 |
+| **Unity MCP 集成** | P1 | 连接 Unity-MCP / GladeKit MCP (260+ 工具) / akiojin (70 工具) |
+| **Godot MCP 集成** | P1 | 连接 GladeKit MCP for Godot (105 工具) |
+| **Wwise MCP 集成** | P2 | 连接 Wwise-MCP (69 工具)，覆盖游戏音频自动化 |
 | **MCP Server 管理器** | P0 | 管理已连接的 MCP Server 列表、启停、权限配置、状态监控 |
 | **MCP 工具命名空间** | P0 | 不同 MCP Server 的工具通过命名空间隔离（如 `unreal.scene.spawn_actor`、`unity.prefab.create`），Agent 根据项目引擎类型自动加载对应工具集 |
 
@@ -256,7 +256,7 @@ Pipeline 示例（内置流水线）：
 | 功能 | 优先级 | 说明 |
 |------|--------|------|
 | **主窗口框架** | P0 | 原生桌面 GUI（具体 GUI 框架待技术选型），三面板布局。同时提供 CLI/无头模式，Agent 能力可通过命令行调用 |
-| **CLI / Headless 模式** | P0 | 与 GUI 共享同一套 Harness Core 和 Agent Layer；支持 `harness run "生成一个骑士模型"` 等纯命令行交互；支持 `harness serve` 作为本地服务运行 |
+| **CLI / Headless 模式** | P0 | 与 GUI 共享同一套 Harness Core 和 Agent Layer；支持 `agdh run "生成一个骑士模型"` 等纯命令行交互；支持 `agdh serve` 作为本地服务运行 |
 | **终端/Shell 集成** | P0 | 内嵌终端，Agent 可执行 shell 命令 |
 | **文件浏览器** | P0 | 项目文件树，支持拖拽、右键菜单 |
 | **Diff Viewer** | P1 | 代码变更前后对比 |

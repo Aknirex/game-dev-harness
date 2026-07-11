@@ -1,4 +1,4 @@
-# Game Dev Harness —— 广泛调研报告
+# aknirex's Game Dev Harness —— 广泛调研报告
 
 > 调研日期：2026-07-11
 > 覆盖：Agent 架构模式 · Unreal Editor IPC · AI Agent 安全 · Electron+C++ 集成 · 已知漏洞与防护
@@ -190,7 +190,7 @@ FPlatformProcess::CreateProc(*UATPath, *Args, ...);
 
 **共性模式**：工具描述投毒、Rules 文件注入、配置自篡改、路径遍历、未验证的 AI 参数命中 `eval()`/`exec()`。
 
-### 3.5 对 Game Dev Harness 的建议
+### 3.5 对 aknirex's Game Dev Harness 的建议
 
 **核心原则**：
 1. **LLM 不是安全边界**——模型能控制的每个工具参数都是攻击者的输入

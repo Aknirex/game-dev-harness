@@ -1,4 +1,4 @@
-# Game Dev Harness —— Phase 2 补充调研报告
+# aknirex's Game Dev Harness —— Phase 2 补充调研报告
 
 > 调研日期：2026-07-11
 > 覆盖：UE5 深度特性可编程性 · Agent 记忆持久化 · 游戏开发工具与中间件生态

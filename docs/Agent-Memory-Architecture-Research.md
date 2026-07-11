@@ -2,7 +2,7 @@
 
 > 调研日期：2026-07-11
 > 范围：Claude Code · Cursor · 向量数据库 · 对话持久化 · 跨会话状态 · 多 Agent 共享上下文
-> 目标：为 Game Dev Harness 的 4-Agent 系统（Planner / Coder / Asset / Reviewer）设计持久化记忆方案
+> 目标：为 aknirex's Game Dev Harness 的 4-Agent 系统（Planner / Coder / Asset / Reviewer）设计持久化记忆方案
 
 ---
 
@@ -191,7 +191,7 @@ globs: ["**/*.ts", "**/*.tsx"]
 **业界共识——Hermes Agent 和 Cursor SDK 都采用双写模式：**
 
 ```
-~/.game-dev-harness/
+~/.aknirex-game-dev-harness/
 ├── sessions/
 │   ├── session-{uuid}.jsonl      # 每条对话的完整原始日志（人类可读、可 git）
 │   └── metadata.db              # SQLite: 查询索引 + 对话摘要 + Agent 状态
@@ -316,7 +316,7 @@ CREATE TABLE user_preferences (
 ### 4.1 需要持久化的内容
 
 ```json
-// .game-dev-harness/project-state.json
+// .aknirex-game-dev-harness/project-state.json
 {
   "project_root": "/path/to/game-project",
   "engine_type": "unreal",
@@ -369,7 +369,7 @@ CREATE TABLE user_preferences (
 ├── tasks.json          # 任务配置（对标 Harness 的 Pipeline 模板）
 └── extensions.json     # 推荐扩展（对标 Harness 的推荐插件列表）
 
-.game-dev-harness/
+.aknirex-game-dev-harness/
 ├── project-state.json  # 项目级别配置（引擎类型、构建参数、文件索引哈希）
 ├── agents.json         # Agent 行为配置（每个 Agent 的 model、temperature、system prompt 覆盖）
 ├── mcp-servers.json    # MCP Server 连接配置
@@ -439,7 +439,7 @@ Agent 学习循环:
   4. 未确认 → 自动过期
 
 隐私设计：
-  - 所有记忆本地存储（~/.game-dev-harness/memory/）
+  - 所有记忆本地存储（~/.aknirex-game-dev-harness/memory/）
   - 记忆目录可加入 .gitignore
   - 用户可随时通过 UI 查看/编辑/删除
   - 支持 "隐私模式"——本次会话不学习新偏好
@@ -550,7 +550,7 @@ C++ 侧:
   + 自定义 sqlite_vec 绑定 (或直接调 C API)
 
 文件系统布局:
-  ~/.game-dev-harness/
+  ~/.aknirex-game-dev-harness/
     ├── sessions/{session-uuid}.jsonl
     ├── sessions/metadata.db          ← SQLite 主库
     ├── memory/project/{index,topics}/
@@ -669,7 +669,7 @@ private:
 会话生命周期:
   ┌─ Session Start ───────────────────────────────────────────┐
   │ 1. 加载 project-state.json                               │
-  │ 2. 加载 ~/.game-dev-harness/memory/project/MEMORY.md     │
+  │ 2. 加载 ~/.aknirex-game-dev-harness/memory/project/MEMORY.md     │
   │    (前 200 行/25KB 注入 System Prompt)                     │
   │ 3. 检查 project-state.json 的文件哈希与磁盘                │
   │    不匹配 → 提示用户（"检测到外部修改"）                   │
@@ -741,7 +741,7 @@ void MemoryManager::ApplyTokenBudget(
 
 ---
 
-## 八、给 Game Dev Harness 的具体建议
+## 八、给 aknirex's Game Dev Harness 的具体建议
 
 ### 8.1 Phase 1 实现（MVP —— 最小可用记忆）
 
@@ -779,7 +779,7 @@ void MemoryManager::ApplyTokenBudget(
 
 7. **每个 Agent 独立记忆空间**——Coder 的 UE API 记忆不和 Asset Agent 的 3D 管线偏好混合。全局共享记忆（项目架构、错误模式）通过 `global` scope 标记。
 
-8. **本地优先、隐私优先**——所有记忆存储在本地 `~/.game-dev-harness/`，不自动上传云端。用户可选择通过插件实现云端同步（如 SQLite Cloud、自定义 MCP Server）。
+8. **本地优先、隐私优先**——所有记忆存储在本地 `~/.aknirex-game-dev-harness/`，不自动上传云端。用户可选择通过插件实现云端同步（如 SQLite Cloud、自定义 MCP Server）。
 
 ### 8.3 与现有架构的整合点
 

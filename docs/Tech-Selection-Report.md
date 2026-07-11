@@ -1,4 +1,4 @@
-# Game Dev Harness —— 技术选型调研报告
+# aknirex's Game Dev Harness —— 技术选型调研报告
 
 > 调研日期：2026-07-11
 > 方法：对每个技术领域，研究同类成功产品（Claude Desktop、Cursor、VS Code、Blender、Neovim、Unreal Engine 等）的实际选择，分析其决策逻辑，对照本项目需求给出推荐

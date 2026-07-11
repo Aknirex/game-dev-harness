@@ -1,4 +1,4 @@
-# Game Dev Harness —— Phase 1 关键调研报告
+# aknirex's Game Dev Harness —— Phase 1 关键调研报告
 
 > 调研日期：2026-07-11
 > 覆盖：LLM 代码生成能力对比 · MCP C++ SDK 选型 · Electron 桌面分发

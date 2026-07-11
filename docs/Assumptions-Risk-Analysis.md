@@ -1,4 +1,4 @@
-# Game Dev Harness —— 核心假设与风险分析
+# aknirex's Game Dev Harness —— 核心假设与风险分析
 
 > 基于 8 维度风险框架：Value / Usability / Viability / Feasibility / Ethics / GTM / Strategy / Team
 > 分析日期：2026-07-11
