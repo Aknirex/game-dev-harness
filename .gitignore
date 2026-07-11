@@ -1,1 +1,7 @@
 references/
+build/
+out/
+node_modules/
+electron-shell/node_modules/
+electron-shell/dist/
+electron-shell/coverage/

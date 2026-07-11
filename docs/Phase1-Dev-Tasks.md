@@ -6,6 +6,41 @@
 
 ---
 
+## 0. 执行基线（2026-07-11）
+
+### 0.1 实施原则
+
+- IPC 线格式统一为 LSP 风格 `Content-Length` 帧，不按 NDJSON 解析；长度始终按 UTF-8 字节计算。
+- 写操作在 PermissionManager、SandboxEngine 和回滚链路完成前不得接入真实 MCP 工具。
+- 所有工具调用必须按 `ToolRegistry → PermissionManager → ExecutionEngine → Sandbox/MCP` 顺序执行，不允许 Agent 直接调用工具处理器。
+- 单 Agent 默认最多 30 轮；工具业务失败不自动重放，仅允许幂等传输错误按显式策略重试。
+- 项目保持 C++20。M0 的动态 JSON 通过 `src/common/json.h` 隔离；当前使用 nlohmann/json，待锁定兼容 C++20 的 Glaze 版本后再评估替换，业务模块不得直接包含具体 JSON 库头文件。
+
+### 0.2 M0 安全内核任务
+
+| ID | 状态 | 任务 | 依赖 | 验收标准 |
+|----|------|------|------|----------|
+| M0-1 | 已完成 | CMake/vcpkg/C++20 工程骨架 | — | Core 与测试目标可编译 |
+| M0-2 | 已完成 | C++/TypeScript `Content-Length` 帧 codec | M0-1 | 分片、多帧、UTF-8、非法头、大小上限测试通过 |
+| M0-3 | 已完成 | JSON-RPC 消息校验和生命周期最小实现 | M0-2 | `initialize`、`tool/list`、`shutdown`、`exit` 进程级往返通过 |
+| M0-4 | 已完成 | Tool 模型与 ToolRegistry | M0-1 | 10 个 mock tool 注册、过滤、排序、执行及非法 schema 测试通过 |
+| M0-5 | 待实施 | PermissionManager | M0-4 | 默认拒绝；exact/glob；allow-once/session/deny；路径穿越拒绝 |
+| M0-6 | 待实施 | ExecutionEngine 最小只读执行链 | M0-4, M0-5 | 未授权调用不进入 handler；支持取消和超时，不自动重放业务失败 |
+| M0-7 | 进行中 | Electron 主进程与 Core 生命周期托管 | M0-2, M0-3 | 已完成双向 TypeScript IPC Client；待接 Electron `spawn`、崩溃清理和日志展示 |
+| M0-8 | 待实施 | 自动化进程级 E2E | M0-3, M0-5, M0-6, M0-7 | Electron/测试客户端启动 Core，完成握手、工具枚举、反向授权和优雅关闭 |
+
+### 0.3 后续实施顺序
+
+1. 完成 M0-5 PermissionManager，并先覆盖文件路径、网络域名、Shell 命令和 EngineModify 四类资源规则。
+2. 完成 M0-6 ExecutionEngine，确保权限检查是不可绕过的统一入口。
+3. 实施 SandboxEngine 文件隔离、JSONL 操作日志、commit/revert，再开放文件写工具。
+4. 接入 mock MCP Server，完成 `tools/list → ToolRegistry` 只读垂直切片。
+5. 对 Unreal 写操作单独验证 UE Transaction、Source Control changelist 和项目副本方案；无法回滚的工具保持禁用。
+6. 提升最小 Plugin ABI/Loader 为 Phase 1 前置，再接 OpenAI/Anthropic/TRELLIS/MoMask，避免 Provider 固化进 Core。
+7. 完成 AgentLoop、ContextBuilder、Chat/Permission/Sandbox Review UI 和端到端演示。
+
+---
+
 ## 1. 依赖关系总览
 
 ```
