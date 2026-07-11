@@ -130,8 +130,8 @@ C++ 侧: CreateFileMapping (Win) / shm_open (Linux)
 
 | 类别 | 推荐 | 备选 | 理由 |
 |------|------|------|------|
-| **构建系统** | CMake 3.28+ (Ninja) | — | C++ 事实标准（Blender、UE、OBS 都用）；每个第三方库都提供 CMake 集成 |
-| **包管理** | vcpkg (manifest 模式) | Conan 2 | 最大包目录 (2800+)；一行 CMake 集成；二进制缓存加速 CI；所有推荐库都已在 vcpkg 中 |
+| **构建系统** | xmake 3.0+ + xrepo (clang-cl + lld-link) | — | 现代 C++ 构建系统；内置包管理 (xrepo)；Lua DSL 可编程；clang 编译器 + lld 链接器 |
+| **编译器** | clang 22.1 (clang-cl 驱动模式) | — | LLVM 官方发行版；lld-link 替代 MSVC link.exe；完整 C++20 支持 |
 | **HTTP Client** | **cpp-httplib** | libcurl | **内置 SSE Client** + LLM token 流式专用 cookbook；header-only；零外部依赖 |
 | **JSON** | **glaze** (C++20) | simdjson | 最快（3500+ MB/s）；C++20 编译期反射自动序列化 struct——`glz::read_json(obj, json)` 零模板代码 |
 | **测试** | **doctest** | GoogleTest | 编译速度最快（Catch2 的 10-20x）；语法与 Catch2 相同；单头文件；如需 mock 用 GoogleTest |
@@ -155,7 +155,7 @@ C++ 侧: CreateFileMapping (Win) / shm_open (Linux)
 ├───────────────────────────────────────────────────────────┤
 │  IPC: JSON over stdio (Electron ↔ C++ Core)               │
 ├───────────────────────────────────────────────────────────┤
-│  Harness Core (C++)                 构建: CMake + vcpkg    │
+│  Harness Core (C++)                 构建: xmake + clang   │
 │  ┌──────────┬──────────┬──────────┐                       │
 │  │Tool Reg. │Execution │Permission│                       │
 │  │          │Engine    │System    │                       │
@@ -215,5 +215,5 @@ MCP (Model Context Protocol) 标准使用 **JSON-RPC 2.0** 协议，传输层支
 | T1 | GUI 用 Electron + C++ Core 独立进程 | **强**：Claude/Cursor/Windsurf 全部采用，Web Chat UI 生态成熟度碾压原生方案 |
 | T2 | 插件脚本语言用 Lua 5.4 + sol2 | **强**：Lua 是专为"C/C++ 嵌入"设计的语言；Python 沙箱不可行；其他备选无竞争力 |
 | T3 | IPC 用 Named Pipe (命令) + Shared Memory (大数据) | **强**：Named Pipe 延迟最低且零依赖；Shared Memory 是唯一不需要拷贝的大数据传输方案 |
-| T4 | C++ 库：CMake + vcpkg + cpp-httplib + glaze + doctest + spdlog + ASIO + Taskflow | **强**：每个类别都有明确的最优选项，证据充分 |
+| T4 | C++ 库：xmake + xrepo + cpp-httplib + glaze + doctest + spdlog + ASIO + Taskflow | **强**：每个类别都有明确的最优选项，证据充分 |
 | T5 | 插件索引/包托管用 GitHub | 已确认 |

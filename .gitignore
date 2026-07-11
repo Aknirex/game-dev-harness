@@ -1,5 +1,6 @@
 references/
 build/
+.xmake/
 out/
 node_modules/
 electron-shell/node_modules/

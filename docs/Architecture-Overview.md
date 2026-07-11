@@ -741,7 +741,7 @@ User Input: "生成一个 Low-Poly 骑士，带走路动画，导入 Unreal"
 | **IPC 方案** | Shared Memory + Named Pipe | Core↔Python: Shared Memory (大数据) + Named Pipe (信令, ~27µs RTT) |
 | **脚本语言** | Lua 5.4 + sol2 | 专为 C/C++ 嵌入设计, 16µs VM 启动 (沙箱升级路径: Luau) |
 | **插件市场** | GitHub Release 托管 + 官方 JSON 索引 | 去中心化, 类 Homebrew 模式 |
-| **构建系统** | CMake 3.28+ + vcpkg (manifest) | C++ 事实标准 |
+| **构建系统** | xmake 3.0+ (xrepo 包管理) | 现代 C++ 构建系统，内置包管理 |
 | **测试** | doctest | 编译最快 (Catch2 的 10-20x) |
 | **日志** | spdlog | 异步, OBS Studio 同款 |
 | **异步 I/O** | ASIO + C++20 coroutines | 成熟异步框架 |
@@ -755,7 +755,7 @@ User Input: "生成一个 Low-Poly 骑士，带走路动画，导入 Unreal"
 
 ```
 aknirex-game-dev-harness/
-├── CMakeLists.txt
+├── xmake.lua
 ├── src/
 │   ├── app/                    # 应用入口 + GUI
 │   │   ├── main.cpp

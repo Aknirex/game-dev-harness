@@ -20,7 +20,7 @@
 
 | ID | 状态 | 任务 | 依赖 | 验收标准 |
 |----|------|------|------|----------|
-| M0-1 | 已完成 | CMake/vcpkg/C++20 工程骨架 | — | Core 与测试目标可编译 |
+| M0-1 | 已完成 | xmake/clang/C++20 工程骨架 | — | Core 与测试目标可编译 |
 | M0-2 | 已完成 | C++/TypeScript `Content-Length` 帧 codec | M0-1 | 分片、多帧、UTF-8、非法头、大小上限测试通过 |
 | M0-3 | 已完成 | JSON-RPC 消息校验和生命周期最小实现 | M0-2 | `initialize`、`tool/list`、`shutdown`、`exit` 进程级往返通过 |
 | M0-4 | 已完成 | Tool 模型与 ToolRegistry | M0-1 | 10 个 mock tool 注册、过滤、排序、执行及非法 schema 测试通过 |
@@ -44,7 +44,7 @@
 ## 1. 依赖关系总览
 
 ```
-W1: CMake 骨架 (1) ──┬── Electron 骨架 (2) ── IPC 帧协议 (3)
+W1: xmake 骨架 (1) ──┬── Electron 骨架 (2) ── IPC 帧协议 (3)
                       │
 W2:                  Tool 接口 (4)
                       └── ToolRegistry (5)
@@ -77,7 +77,7 @@ W9-10:                     IPC 完整实现 (20)
 
 | ID | 任务 | 估时 | 依赖 | 产出 | 验证标准 |
 |----|------|------|------|------|----------|
-| 1 | CMake 项目骨架 + vcpkg manifest | 2d | — | `CMakeLists.txt`, `CMakePresets.json`, `vcpkg.json` | `cmake --build .` 编译成功，Hello World 可运行 |
+| 1 | xmake 项目骨架 + xrepo 依赖 | 2d | — | `xmake.lua` | `xmake` 编译成功，Hello World 可运行 |
 | 2 | Electron 骨架 | 1d | — | Vite + React + TypeScript 项目，`child_process.spawn()` 启动 Core | `npm run dev` 启动窗口，Core 进程日志可显示 |
 | 3 | stdio IPC 帧协议实现 | 2d | 1, 2 | C++ 端 `ipc_channel.h/cpp`，TS 端 `IpcClient.ts` | 双向发送/接收单条消息测试通过 |
 
@@ -156,7 +156,7 @@ W9-10:                     IPC 完整实现 (20)
 
 | 里程碑 | 周 | 交付物 |
 |--------|-----|--------|
-| M0: 骨架可跑 | W1 末 | CMake 编译 + Electron 窗口 + IPC 往返 |
+| M0: 骨架可跑 | W1 末 | xmake 编译 + Electron 窗口 + IPC 往返 |
 | M1: 核心抽象就绪 | W2 末 | ToolRegistry + PermissionManager + 单元测试 |
 | M2: Sandbox 可用 | W3 末 | 隔离执行 + 可逆回滚 |
 | M3: MCP 联调通过 | W5 末 | 连接 UE MCP Server 并获取工具列表 |

@@ -1,0 +1,33 @@
+set_project("game-dev-harness")
+set_version("0.1.0")
+set_languages("c++20")
+
+set_toolchains("clang-cl")
+set_config("ld", "lld-link")
+
+add_rules("mode.debug", "mode.release")
+
+add_requires("nlohmann_json", "doctest")
+
+target("harness-core-lib")
+    set_kind("static")
+    add_files("src/harness/tool_registry.cpp")
+    add_files("src/ipc/frame_codec.cpp")
+    add_files("src/ipc/json_rpc.cpp")
+    add_includedirs("src", {public = true})
+    add_packages("nlohmann_json", {public = true})
+    set_warnings("all")
+
+target("harness-core")
+    set_kind("binary")
+    add_files("src/core/main.cpp")
+    add_deps("harness-core-lib")
+
+target("harness-tests")
+    set_kind("binary")
+    add_files("tests/test_main.cpp")
+    add_files("tests/frame_codec_test.cpp")
+    add_files("tests/json_rpc_test.cpp")
+    add_files("tests/tool_registry_test.cpp")
+    add_deps("harness-core-lib")
+    add_packages("doctest")

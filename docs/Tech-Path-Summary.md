@@ -38,7 +38,7 @@ Harness Core (C++20, 独立进程)
 | **GUI 壳** | Electron + React | 所有竞品一致选择 (Claude/Cursor/Windsurf/VS Code)。Chat UI (Markdown/代码高亮/流式渲染/Diff) 在 Web 生态是成熟组件，Qt 需从零构建 |
 | **核心语言** | C++20/23 | 性能关键路径 + UE 生态兼容 |
 | **MCP SDK** | cxxmcp (C++17, MIT) | 客户端测试 448/448 通过 (100%), 零运行时依赖 |
-| **构建系统** | CMake 3.28+ + vcpkg (manifest 模式) | C++ 事实标准；vcpkg 2800+ 包, 二进制缓存 |
+| **构建系统** | xmake 3.0+ + xrepo (clang-cl + lld-link) | 现代 C++ 构建系统；内置包管理 (xrepo)，TUNA 镜像加速 |
 | **HTTP Client** | cpp-httplib | 内置 SSE Client + LLM token 流式专用 cookbook, header-only |
 | **JSON** | glaze (C++20 reflection) | 比 nlohmann/json 快 10-15x, 编译期反射零模板代码 |
 | **异步 I/O** | ASIO (standalone) + C++20 coroutines | ASIO 成熟, C++20 协程让异步代码可读 |
