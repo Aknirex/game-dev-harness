@@ -1,0 +1,9 @@
+{
+  "clangd.path": "D:\\tools\\llvm\\bin\\clangd.exe",
+  "clangd.arguments": [
+    "--compile-commands-dir=${workspaceFolder}/build",
+    "--background-index",
+    "--clang-tidy"
+  ],
+  "C_Cpp.intelliSenseEngine": "disabled"
+}

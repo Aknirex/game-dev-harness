@@ -123,6 +123,7 @@ game-dev-harness/
 │   ├── core/
 │   │   └── main.cpp             # 主程序入口
 │   ├── harness/
+│   │   ├── permission_manager.cpp # 权限规则与会话授权
 │   │   └── tool_registry.cpp    # 工具注册表
 │   └── ipc/
 │       ├── frame_codec.cpp      # 帧编解码
@@ -131,6 +132,7 @@ game-dev-harness/
 │   ├── test_main.cpp            # 测试入口
 │   ├── frame_codec_test.cpp
 │   ├── json_rpc_test.cpp
+│   ├── permission_manager_test.cpp
 │   └── tool_registry_test.cpp
 ├── electron/                    # Electron 前端工程
 ├── docs/
@@ -208,7 +210,7 @@ set_languages("c++20")
 
 -- 工具链: 使用 clang-cl 驱动 + lld-link 链接器
 set_toolchains("clang-cl")
-set_config("ld", "lld-link")
+set_toolset("ld", "lld-link")
 
 -- 内置构建模式 (自动处理 debug/release 标志)
 add_rules("mode.debug", "mode.release")
@@ -219,6 +221,7 @@ add_requires("nlohmann_json", "doctest")
 -- 核心静态库
 target("harness-core-lib")
     set_kind("static")
+    add_files("src/harness/permission_manager.cpp")
     add_files("src/harness/tool_registry.cpp")
     add_files("src/ipc/frame_codec.cpp")
     add_files("src/ipc/json_rpc.cpp")
@@ -238,6 +241,7 @@ target("harness-tests")
     add_files("tests/test_main.cpp")
     add_files("tests/frame_codec_test.cpp")
     add_files("tests/json_rpc_test.cpp")
+    add_files("tests/permission_manager_test.cpp")
     add_files("tests/tool_registry_test.cpp")
     add_deps("harness-core-lib")
     add_packages("doctest")
@@ -248,7 +252,7 @@ target("harness-tests")
 | 配置项 | 含义 |
 |--------|------|
 | `set_toolchains("clang-cl")` | 强制使用 clang 的 MSVC 兼容驱动，而非 MSVC 编译器 |
-| `set_config("ld", "lld-link")` | 指定链接器为 lld-link（LLVM 链接器） |
+| `set_toolset("ld", "lld-link")` | 显式指定目标链接器为 lld-link（LLVM 链接器） |
 | `add_rules("mode.debug", "mode.release")` | 启用 `xmake f -m debug` / `xmake f -m release` 模式切换 |
 | `add_requires(...)` | 声明项目依赖，xmake 首次构建时自动通过 xrepo 下载 |
 | `add_packages(..., {public = true})` | 公开继承：依赖此库的 target 自动获得相同包 |

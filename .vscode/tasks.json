@@ -1,0 +1,98 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "xmake: configure debug",
+      "type": "process",
+      "command": "C:\\Program Files\\PowerShell\\7\\pwsh.exe",
+      "args": [
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-Command",
+        ". 'D:\\tools\\env.ps1'; xmake f -p windows -a x64 -m debug -o build -y"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "xmake: build debug",
+      "type": "process",
+      "command": "C:\\Program Files\\PowerShell\\7\\pwsh.exe",
+      "args": [
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-Command",
+        ". 'D:\\tools\\env.ps1'; xmake -y; if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }; xmake project -k compile_commands --lsp=clangd build"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "dependsOn": "xmake: configure debug",
+      "dependsOrder": "sequence",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "xmake: test debug",
+      "type": "process",
+      "command": "C:\\Program Files\\PowerShell\\7\\pwsh.exe",
+      "args": [
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-Command",
+        ". 'D:\\tools\\env.ps1'; xmake run harness-tests"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "dependsOn": "xmake: build debug",
+      "dependsOrder": "sequence",
+      "group": "test",
+      "problemMatcher": []
+    },
+    {
+      "label": "xmake: run core",
+      "type": "process",
+      "command": "C:\\Program Files\\PowerShell\\7\\pwsh.exe",
+      "args": [
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-Command",
+        ". 'D:\\tools\\env.ps1'; xmake run harness-core"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "dependsOn": "xmake: build debug",
+      "dependsOrder": "sequence",
+      "problemMatcher": []
+    },
+    {
+      "label": "xmake: generate compile commands",
+      "type": "process",
+      "command": "C:\\Program Files\\PowerShell\\7\\pwsh.exe",
+      "args": [
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-Command",
+        ". 'D:\\tools\\env.ps1'; xmake project -k compile_commands --lsp=clangd build"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "dependsOn": "xmake: configure debug",
+      "dependsOrder": "sequence",
+      "problemMatcher": []
+    }
+  ]
+}
