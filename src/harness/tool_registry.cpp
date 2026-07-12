@@ -23,22 +23,32 @@ void ToolRegistry::Register(std::unique_ptr<ITool> tool) {
   ToolSchema schema = tool->GetSchema();
   ValidateSchema(schema);
 
+  // Freeze the descriptor at registration time.
+  auto descriptor = ToolDescriptor::Freeze(schema);
+
   std::scoped_lock lock(mutex_);
   if (tools_.contains(schema.name)) {
     throw std::invalid_argument("tool already registered: " + schema.name);
   }
+  descriptors_.emplace(std::string(schema.name), std::move(descriptor));
   tools_.emplace(std::move(schema.name), std::move(tool));
 }
 
-std::vector<ToolSchema> ToolRegistry::Query(std::optional<std::string_view> category,
-                                            int max_danger_level) const {
+std::vector<ToolSchema> ToolRegistry::Query(
+    std::optional<std::string_view> category, int max_danger_level) const {
   std::vector<ToolSchema> schemas;
   std::scoped_lock lock(mutex_);
-  schemas.reserve(tools_.size());
-  for (const auto& [name, tool] : tools_) {
-    auto schema = tool->GetSchema();
-    if ((!category.has_value() || schema.category == *category) &&
-        schema.danger_level <= max_danger_level) {
+  schemas.reserve(descriptors_.size());
+  for (const auto& [name, descriptor] : descriptors_) {
+    if ((!category.has_value() || descriptor.category == *category) &&
+        descriptor.danger_level <= max_danger_level) {
+      ToolSchema schema;
+      schema.name = descriptor.name;
+      schema.description = descriptor.description;
+      schema.parameters = descriptor.parameters;
+      schema.category = descriptor.category;
+      schema.danger_level = descriptor.danger_level;
+      schema.required_permissions = descriptor.required_permissions;
       schemas.push_back(std::move(schema));
     }
   }
@@ -46,25 +56,20 @@ std::vector<ToolSchema> ToolRegistry::Query(std::optional<std::string_view> cate
   return schemas;
 }
 
-const ITool* ToolRegistry::Find(std::string_view name) const {
+std::optional<ToolDescriptor> ToolRegistry::GetDescriptor(
+    std::string_view name) const {
+  std::scoped_lock lock(mutex_);
+  const auto iterator = descriptors_.find(std::string(name));
+  if (iterator == descriptors_.end()) {
+    return std::nullopt;
+  }
+  return iterator->second;
+}
+
+ITool* ToolRegistry::Find(std::string_view name) {
   std::scoped_lock lock(mutex_);
   const auto iterator = tools_.find(std::string(name));
   return iterator == tools_.end() ? nullptr : iterator->second.get();
-}
-
-ToolResult ToolRegistry::Execute(std::string_view name, const Json& arguments) {
-  ITool* tool = nullptr;
-  {
-    std::scoped_lock lock(mutex_);
-    const auto iterator = tools_.find(std::string(name));
-    if (iterator == tools_.end()) {
-      return {.success = false,
-              .summary = "Tool not found",
-              .error_detail = "No tool is registered with name: " + std::string(name)};
-    }
-    tool = iterator->second.get();
-  }
-  return tool->Execute(arguments);
 }
 
 std::size_t ToolRegistry::Size() const {
@@ -74,7 +79,8 @@ std::size_t ToolRegistry::Size() const {
 
 void ToolRegistry::ValidateSchema(const ToolSchema& schema) {
   if (!std::regex_match(schema.name, kToolNamePattern)) {
-    throw std::invalid_argument("tool name must be a namespaced lowercase identifier");
+    throw std::invalid_argument(
+        "tool name must be a namespaced lowercase identifier");
   }
   if (schema.description.empty()) {
     throw std::invalid_argument("tool description must not be empty");
@@ -96,13 +102,15 @@ void ToolRegistry::ValidateSchema(const ToolSchema& schema) {
       throw std::invalid_argument("tool parameter names must be unique");
     }
     if (parameter.required && parameter.default_value.has_value()) {
-      throw std::invalid_argument("required parameters cannot define a default value");
+      throw std::invalid_argument(
+          "required parameters cannot define a default value");
     }
   }
 
   for (const auto& permission : schema.required_permissions) {
     if (permission.resource_pattern.empty()) {
-      throw std::invalid_argument("permission resource pattern must not be empty");
+      throw std::invalid_argument(
+          "permission resource pattern must not be empty");
     }
   }
 }
